@@ -1,0 +1,4 @@
+9 - number of variables
+2 - number of root nodes (always the first in the data)             
+9   9   2   10  9   7   12  6   2   - number of states for each variable
+1672 - number of samples
