@@ -279,8 +279,11 @@ def MDLSize(arcList, cptList, noDataPoints, noStates):
     for idx, entry in enumerate(cptList):
         if len(arcList[idx]) == 1:
             B += len(entry) - 1
+
         elif len(arcList[idx]) == 2:
+            # print entry.shape
             B += (entry.shape[0] - 1) * entry.shape[1]
+
         elif len(arcList[idx]) == 3:
             B += (entry.shape[0] - 1) * entry.shape[1] * entry.shape[2]
     
@@ -294,6 +297,15 @@ def JointProbability(dataPoint, arcList, cptList):
     jP = 1.0
 # Coursework 3 task 4 begins here
     
+    for entry in arcList:
+        if len(entry) == 1:
+            jP = jP * cptList[entry[0]][dataPoint[entry[0]]]
+        
+        elif len(entry) == 2:
+            jP = jP * cptList[entry[0]][dataPoint[entry[0]]][dataPoint[entry[1]]]
+            
+        elif len(entry) == 3:
+            jP = jP * cptList[entry[0]][dataPoint[entry[0]]][dataPoint[entry[1]]][dataPoint[entry[2]]]
 
 
 # Coursework 3 task 4 ends here 
@@ -303,10 +315,24 @@ def JointProbability(dataPoint, arcList, cptList):
 def MDLAccuracy(theData, arcList, cptList):
     mdlAccuracy=0
 # Coursework 3 task 5 begins here
+    
+    for entry in theData:
 
+        mdlAccuracy += log2(JointProbability(entry, arcList, cptList)) 
 
 # Coursework 3 task 5 ends here 
     return mdlAccuracy
+
+def MaxScoreNetwork(theData, noDataPoints, noStates, arcList, cptList):
+
+    best_score = 10e100
+
+    for i in range(len(arcList)):
+        this_arcList = arcList[0:i] + arcList[i+1:]
+        print this_arcList
+
+        score = MDLSize(this_arcList, cptList, noDataPoints, noStates) - MDLAccuracy(theData, this_arcList, cptList)
+
 #
 # End of coursework 2
 #
@@ -372,30 +398,29 @@ theData = array(datain)
 AppendString("results.txt","Coursework Three Results by txl11")
 AppendString("results.txt","") #blank line
 
-# print CPT_2(theData, 2, 1, 0, noStates)
 
 arcList, cptList = HepitisCBayesianNetwork(theData, noStates)
-print MDLSize(arcList, cptList, noDataPoints, noStates) 
+hepc_mdlsize = MDLSize(arcList, cptList, noDataPoints, noStates)
 
-# theData, varRow, varCol, noStates
-# j = JPT(datain, 2, 3, noStates)
-# print MutualInformation(j)
-# print MutualInformation(array([[0.5, 0], [0, 0.5]]))
+AppendString("results.txt", "The MDLSize of the network of the Hepatitis C data set")
+AppendString("results.txt", hepc_mdlsize)
+AppendString("results.txt","") #blank line
 
-# AppendString("results.txt", "Dependency Matrix for the HepatitisC dataset")
-# dep_matrix = DependencyMatrix(datain, noVariables, noStates)
-# AppendArray("results.txt", dep_matrix)
+hepc_mdlacc = MDLAccuracy(theData, arcList, cptList)
 
-# AppendString("results.txt", "Dependency List for the HepatitisC dataset")
-# dep_list = DependencyList(dep_matrix)
-# AppendArray("results.txt", dep_list)
+AppendString("results.txt", "The MDLAccuracy of the network of the Hepatitis C data set")
+AppendString("results.txt", hepc_mdlacc)
+AppendString("results.txt","") #blank line
 
-# AppendString("results.txt", "Maximally Weighted Spanning Network for the HepatitisC dataset")
-# spanning_tree = SpanningTreeAlgorithm(dep_list, noVariables)
-# AppendArray("results.txt", spanning_tree)
+AppendString("results.txt", "The MDLScore of the network of the Hepatitis C data set")
+AppendString("results.txt", hepc_mdlsize - hepc_mdlacc)
+AppendString("results.txt","") #blank line
+
+print MaxScoreNetwork(theData, noDataPoints, noStates, arcList, cptList)
+# print JointProbability([0, 2, 0, 9, 8, 6, 6, 4, 1], arcList, cptList)
+
+
 
 # numpy.savetxt("foo.csv", DependencyMatrix(datain, noVariables, noStates), delimiter=",")
-
-# print DependencyList(DependencyMatrix(datain, noVariables, noStates))
 
 
