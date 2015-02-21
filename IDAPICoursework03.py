@@ -276,16 +276,19 @@ def MDLSize(arcList, cptList, noDataPoints, noStates):
     
     B = 0
 
-    for idx, entry in enumerate(cptList):
-        if len(arcList[idx]) == 1:
-            B += len(entry) - 1
+    for entry in arcList:
 
-        elif len(arcList[idx]) == 2:
-            # print entry.shape
-            B += (entry.shape[0] - 1) * entry.shape[1]
+        # shorthand variable to avoid repetition and potential typos
+        the_cpt_list = cptList[entry[0]]
 
-        elif len(arcList[idx]) == 3:
-            B += (entry.shape[0] - 1) * entry.shape[1] * entry.shape[2]
+        if len(entry) == 1:
+            B += len(the_cpt_list) - 1
+    
+        if len(entry) == 2:
+            B += (len(the_cpt_list) - 1) * the_cpt_list.shape[1]
+        
+        if len(entry) == 3:
+            B += (len(the_cpt_list) - 1) * the_cpt_list.shape[1] * the_cpt_list.shape[2]
     
     mdlSize = B * logN
 
@@ -296,7 +299,7 @@ def MDLSize(arcList, cptList, noDataPoints, noStates):
 def JointProbability(dataPoint, arcList, cptList):
     jP = 1.0
 # Coursework 3 task 4 begins here
-    
+
     for entry in arcList:
         if len(entry) == 1:
             jP = jP * cptList[entry[0]][dataPoint[entry[0]]]
@@ -316,23 +319,75 @@ def MDLAccuracy(theData, arcList, cptList):
     mdlAccuracy=0
 # Coursework 3 task 5 begins here
     
+    # sum the log2 of each probability
     for entry in theData:
-
         mdlAccuracy += log2(JointProbability(entry, arcList, cptList)) 
 
 # Coursework 3 task 5 ends here 
     return mdlAccuracy
 
-def MaxScoreNetwork(theData, noDataPoints, noStates, arcList, cptList):
+def MaxScoreNetwork(theData, noDataPoints, noStates, noRoots, arcList, cptList):
 
-    best_score = 10e100
+    # Used later on to save the best lists and ensure they are not modified later
+    from copy import deepcopy
 
+    # Function to recalculate the cpt depending on the number of parents
+    def recalculate_cpt(modified_arc):
+        if len(modified_arc) == 1:
+            return Prior(theData, modified_arc[0], noStates)
+        
+        elif len(modified_arc) == 2:
+            return CPT(theData, modified_arc[0], modified_arc[1], noStates)
+
+    # Pick high number - hopefully we will never go this high with our calculations!
+    best_score = 1e10000
+
+    # iterate through all of the arcs in the list
     for i in range(len(arcList)):
-        this_arcList = arcList[0:i] + arcList[i+1:]
-        print this_arcList
 
-        score = MDLSize(this_arcList, cptList, noDataPoints, noStates) - MDLAccuracy(theData, this_arcList, cptList)
+        # save the arc and cpt in its original state, so they can be restored after testing
+        arc_piece = arcList[i]
+        cpt_piece = cptList[i]
 
+        # in the case of a singly connected node, we remove its parent
+        if len(arcList[i]) == 2:
+
+            # replace arclist and cptlist with new values for testing
+            arcList[i] = [arcList[i][0]]
+            cptList[i] = recalculate_cpt(arcList[i])
+            
+            # print arcList
+            score = MDLSize(arcList, cptList, noDataPoints, noStates) - MDLAccuracy(theData, arcList, cptList)
+            # print score
+
+            if score < best_score:
+                best_score = score
+                best_arclist = deepcopy(arcList)
+                best_cptlist = deepcopy(cptList)
+
+            arcList[i] = arc_piece
+            cptList[i] = cpt_piece
+
+        if len(arcList[i]) == 3:
+
+            for j in range(1,3):
+            
+                arcList[i] = [arcList[i][0], arcList[i][j]]
+                cptList[i] = recalculate_cpt(arcList[i])
+
+                # print arcList
+                score = MDLSize(arcList, cptList, noDataPoints, noStates) - MDLAccuracy(theData, arcList, cptList)
+                # print score
+                
+                if score < best_score:
+                    best_score = score
+                    best_arclist = deepcopy(arcList)
+                    best_cptlist = deepcopy(cptList)
+
+                arcList[i] = arc_piece
+                cptList[i] = cpt_piece
+
+    return best_score, best_arclist, best_cptlist
 #
 # End of coursework 2
 #
@@ -416,7 +471,10 @@ AppendString("results.txt", "The MDLScore of the network of the Hepatitis C data
 AppendString("results.txt", hepc_mdlsize - hepc_mdlacc)
 AppendString("results.txt","") #blank line
 
-print MaxScoreNetwork(theData, noDataPoints, noStates, arcList, cptList)
+best_score, best_arclist, best_cptlist = MaxScoreNetwork(theData, noDataPoints, noStates, noRoots, arcList, cptList)
+AppendString("results.txt", "The MDLScore of the best network (of all the networks with one arc removed) of the Hepatitis C data set")
+AppendString("results.txt", best_score)
+
 # print JointProbability([0, 2, 0, 9, 8, 6, 6, 4, 1], arcList, cptList)
 
 

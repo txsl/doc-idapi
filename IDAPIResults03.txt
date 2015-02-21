@@ -1,0 +1,13 @@
+Coursework Three Results by txl11
+
+The MDLSize of the network of the Hepatitis C data set
+3972.430238
+
+The MDLAccuracy of the network of the Hepatitis C data set
+-23672.1810271
+
+The MDLScore of the network of the Hepatitis C data set
+27644.6112651
+
+The MDLScore of the best network (of all the networks with one arc removed) of the Hepatitis C data set
+25916.7016818
