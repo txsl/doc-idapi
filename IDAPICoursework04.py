@@ -15,7 +15,7 @@ def Mean(theData):
     # Coursework 4 task 1 begins here
     print realData.shape
     print realData
-    print realData.sum(axis=0), theData.shape[1]
+    # print realData.sum(axis=0), theData.shape[1]
     mean = realData.sum(axis=0)/theData.shape[1]
 
 
@@ -28,7 +28,35 @@ def Covariance(theData):
     noVariables=theData.shape[1] 
     covar = zeros((noVariables, noVariables), float)
     # Coursework 4 task 2 begins here
+    noSamples = theData.shape[0]
 
+    m = Mean(theData)
+    print m
+    
+    def get_var(idx):
+        tot = 0.0
+        # exit()
+        for i in realData[:,idx]:
+            # print i, m[idx]
+            tot += i - m[idx]
+            # print tot
+
+        return tot
+
+    for row_idx, row in enumerate(covar):
+        # this_row = theData[row_idx]
+        for idx, item in enumerate(row):
+            print item, idx, row_idx
+            # print get_var(row_idx), get_var(idx)
+            s = 0.0
+            for i in range(noSamples):
+                s += (realData[row_idx, i] - m[row_idx])*(realData[idx, i] - m[idx])
+
+            # item = (get_var(row_idx) * get_var(idx)) #/(noSamples - 1)
+            covar[row_idx, idx] = s/(noSamples - 1)
+            # item = row_idx + idx
+            # print item, 'row', row_idx, 'column', idx
+        print row
 
     # Coursework 4 task 2 ends here
     return covar
@@ -71,14 +99,14 @@ theData = array(datain)
 AppendString("results.txt","Coursework Three Results by txl11")
 AppendString("results.txt","") #blank line
 
-test_data = [ array([[1, 2, 5], [3, 4, 5]]), random.rand(3, 5), random.rand(5,3), random.rand(8, 8) ]
+# test_data = [ array([[1, 2, 5], [3, 4, 5]]), random.rand(3, 5), random.rand(5,3), random.rand(8, 8) ]
 
-for t in test_data:
-    print Mean(t)
-    # print average(t, axis=1), "\n"
-
-
-
+# for t in test_data:
+#     print Mean(t)
+#     # print average(t, axis=1), "\n"x
+m = array([[-1, 1, 2], [ -2, 3, 1], [4, 0,3]])
+print Covariance(m)
+print cov(m)
 
 # print JointProbability([0, 2, 0, 9, 8, 6, 6, 4, 1], arcList, cptList)
 
