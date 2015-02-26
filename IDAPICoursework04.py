@@ -49,8 +49,10 @@ def Covariance(theData):
             print item, idx, row_idx
             # print get_var(row_idx), get_var(idx)
             s = 0.0
+            print range(noSamples)
             for i in range(noSamples):
-                s += (realData[row_idx, i] - m[row_idx])*(realData[idx, i] - m[idx])
+                print realData[row_idx, i], realData[idx, i]
+                s += (realData[i, row_idx] - m[row_idx])*(realData[i, idx] - m[idx])
 
             # item = (get_var(row_idx) * get_var(idx)) #/(noSamples - 1)
             covar[row_idx, idx] = s/(noSamples - 1)
