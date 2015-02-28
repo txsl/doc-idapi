@@ -58,13 +58,15 @@ def Covariance(theData):
             covar[row_idx, idx] = s/(noSamples - 1)
             # item = row_idx + idx
             # print item, 'row', row_idx, 'column', idx
-        print row
 
     # Coursework 4 task 2 ends here
     return covar
 def CreateEigenfaceFiles(theBasis):
-    adummystatement = 0 #delete this when you do the coursework
+    
     # Coursework 4 task 3 begins here
+
+    for idx, basis in enumerate(theBasis):
+        SaveEigenface(basis, "PrincipalComponent_" + str(idx) + ".jpg")
 
     # Coursework 4 task 3 ends here
 
@@ -72,12 +74,42 @@ def ProjectFace(theBasis, theMean, theFaceImage):
     magnitudes = []
     # Coursework 4 task 4 begins here
 
+    # magnitudes1 = multiply(array(theFaceImage) - array(theMean), theBasis)
+    for basis in theBasis:
+        magnitudes.append(dot((array(theFaceImage) - array(theMean)), basis))
+    # print setdiff1d(magnitudes, magnitudes1)
     # Coursework 4 task 4 ends here
     return array(magnitudes)
 
 def CreatePartialReconstructions(aBasis, aMean, componentMags):
-    adummystatement = 0  #delete this when you do the coursework
+    
     # Coursework 4 task 5 begins here
+    # print aMean
+
+    p_x = aMean
+    SaveEigenface(array(p_x), "Reconstruction_MeanFace.jpg")
+
+    # p_x = multiply(componentMags[idx], aBasis[0])
+    # print p_x
+
+    # SaveEigenface(p_x, "Reconstruction_" + ".jpg")
+
+
+    for idx, basis in enumerate(aBasis):
+        # if idx > 0:
+            # recon = ones([len(aBasis[0])])
+            
+            # for i in range(idx):
+            #     recon = multiply(recon, aBasis[i])
+                
+            # print recon, min(recon), max(recon)
+        # p_x = multiply(componentMags[0], recon)
+        # print multiply(componentMags[idx], aBasis[idx])
+        # p_x = multiply(aBasis[idx], componentMags[idx]) + p_x
+        p_x += dot(basis, componentMags[idx].T)
+
+        SaveEigenface(p_x, "Reconstruction_" + str(idx) + ".jpg")
+
 
     # Coursework 4 task 5 ends here
 
@@ -88,6 +120,11 @@ def PrincipalComponents(theData):
     # data has so many variables you need to use the Kohonen Lowe method described in lecture 15
     # The output should be a list of the principal components normalised and sorted in descending 
     # order of their eignevalues magnitudes
+    # print array(theData).shape
+    U = Mean(array(theData))
+    # SaveEigenface(U, 'test.jpg')
+    # print setdiff1d(map(int, U), ReadOneImage('MeanImage.jpg'))
+    
 
     
     # Coursework 4 task 6 ends here
@@ -107,13 +144,15 @@ AppendString("results.txt","") #blank line
 #     print Mean(t)
 #     # print average(t, axis=1), "\n"x
 m = array([[-1, 1, 2], [ -2, 3, 1], [4, 0,3]])
-print Covariance(m)
-print cov(m)
+# print Covariance(m)
+# print cov(m)
 
-# print JointProbability([0, 2, 0, 9, 8, 6, 6, 4, 1], arcList, cptList)
+# print 
 
+CreateEigenfaceFiles(ReadEigenfaceBasis())
 
+projected_faces = ProjectFace(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), ReadOneImage('c.pgm'))
 
-# numpy.savetxt("foo.csv", DependencyMatrix(datain, noVariables, noStates), delimiter=",")
+CreatePartialReconstructions(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), projected_faces)
 
-
+# PrincipalComponents(ReadImages())
