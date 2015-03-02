@@ -14,12 +14,7 @@ def Mean(theData):
     mean = []
     # Coursework 4 task 1 begins here
     
-    # print realData.shape
-    # print realData
-    # print realData.sum(axis=0), theData.shape[1]
-    # print realData.shape
     mean = realData.sum(axis=0)/theData.shape[0]
-
 
     # Coursework 4 task 1 ends here
     return array(mean)
@@ -32,43 +27,22 @@ def Covariance(theData):
     # Coursework 4 task 2 begins here
     noSamples = theData.shape[0]
 
-    m = Mean(theData)
-    print m
-    
-    def get_var(idx):
-        tot = 0.0
-        # exit()
-        for i in realData[:,idx]:
-            # print i, m[idx]
-            tot += i - m[idx]
-            # print tot
+    # Using the equation provided in lecture slides
+    U = realData - tile(Mean(realData), (realData.shape[0], 1))
+    covar = dot(U.T, U)/(noSamples - 1)
 
-        return tot
-
-    for row_idx, row in enumerate(covar):
-        # this_row = theData[row_idx]
-        for idx, item in enumerate(row):
-            print item, idx, row_idx
-            # print get_var(row_idx), get_var(idx)
-            s = 0.0
-            print range(noSamples)
-            for i in range(noSamples):
-                print realData[row_idx, i], realData[idx, i]
-                s += (realData[i, row_idx] - m[row_idx])*(realData[i, idx] - m[idx])
-
-            # item = (get_var(row_idx) * get_var(idx)) #/(noSamples - 1)
-            covar[row_idx, idx] = s/(noSamples - 1)
-            # item = row_idx + idx
-            # print item, 'row', row_idx, 'column', idx
+    # Note that it produces the same output as the numpy function cov (the rowvar transforms so columns represent variables and rows observations)
+    n_cov = cov(realData, rowvar=0)
 
     # Coursework 4 task 2 ends here
     return covar
-def CreateEigenfaceFiles(theBasis):
+
+def CreateEigenfaceFiles(theBasis, file_prefix):
     
     # Coursework 4 task 3 begins here
 
     for idx, basis in enumerate(theBasis):
-        SaveEigenface(basis, "PrincipalComponent_" + str(idx) + ".jpg")
+        SaveEigenface(basis, file_prefix + str(idx) + ".jpg")
 
     # Coursework 4 task 3 ends here
 
@@ -76,41 +50,28 @@ def ProjectFace(theBasis, theMean, theFaceImage):
     magnitudes = []
     # Coursework 4 task 4 begins here
 
-    # magnitudes1 = multiply(array(theFaceImage) - array(theMean), theBasis)
+    # take the dot product of the mean centred image against the eigenvector
     for basis in theBasis:
         magnitudes.append(dot((array(theFaceImage) - array(theMean)), basis))
-    # print setdiff1d(magnitudes, magnitudes1)
+
     # Coursework 4 task 4 ends here
     return array(magnitudes)
 
-def CreatePartialReconstructions(aBasis, aMean, componentMags):
+def CreatePartialReconstructions(aBasis, aMean, componentMags, file_prefix):
     
     # Coursework 4 task 5 begins here
-    # print aMean
 
+    # Start off with just the mean face
     p_x = aMean
-    SaveEigenface(array(p_x), "Reconstruction_MeanFace.jpg")
+    SaveEigenface(array(p_x), file_prefix + "MeanFace.jpg")
 
-    # p_x = multiply(componentMags[idx], aBasis[0])
-    # print p_x
-
-    # SaveEigenface(p_x, "Reconstruction_" + ".jpg")
-
-
+    # For each eigenface
     for idx, basis in enumerate(aBasis):
-        # if idx > 0:
-            # recon = ones([len(aBasis[0])])
-            
-            # for i in range(idx):
-            #     recon = multiply(recon, aBasis[i])
-                
-            # print recon, min(recon), max(recon)
-        # p_x = multiply(componentMags[0], recon)
-        # print multiply(componentMags[idx], aBasis[idx])
-        # p_x = multiply(aBasis[idx], componentMags[idx]) + p_x
+
+        # Add the extra information from each basis and component in (then save it)
         p_x += dot(basis, componentMags[idx].T)
 
-        SaveEigenface(p_x, "Reconstruction_" + str(idx) + ".jpg")
+        SaveEigenface(p_x, file_prefix + str(idx) + ".jpg")
 
 
     # Coursework 4 task 5 ends here
@@ -123,58 +84,21 @@ def PrincipalComponents(theData):
     # The output should be a list of the principal components normalised and sorted in descending 
     # order of their eignevalues magnitudes
     real_data = array(theData)
-    # print real_data.shape
-    # print real_data
-    # print Mean(real_data)
-    # print tile(Mean(real_data), (real_data.shape[0], 1)).shape
-    
-    # print tile(Mean(real_data), (real_data.shape[0], 1))
-    # print real_data.shape[0]
-    # print tile(Mean(real_data), (real_data.shape[0], 1))
+
     U = real_data - tile(Mean(real_data), (real_data.shape[0], 1))
 
-    # small_vec = U * U.T
-    # print U.T * U
-    # print U * U.T
-    # print dot(U.T, U).shape
+    # Generate our small matrix
     small_vec = dot(U, U.T)
 
-    # print small_vec
-    # small_eig = 1
+    # Get small matrix's eigvenvalues and eigenvectors
     w, v = linalg.eig(small_vec)
-    # print sum(small_vec, axis=0)
 
+    # Convert the eigenvalues from the small matrix to the big one
     big_eig = dot(U.T, v)
 
-    # sort_list = 
-    print argsort(w)[::-1]
+    # Sort in to the correct order (with argsort), and normalise each vector
     for item in argsort(w)[::-1]:
         orthoPhi.append(big_eig[:,item]/sqrt(sum(power(big_eig[:,item],2))))
-
-    # for row in big_eig:
-    #     pass
-        # print sum(power(row, 2))
-
-    print w
-    # print 'NORMS'
-    # for row in ReadEigenfaceBasis():
-    #     print linalg.norm(row)
-    # print linalg.norm(ReadEigenfaceBasis())
-
-    for row in orthoPhi:
-        print sum(power(row, 2))
-
-    # print U
-    # print U.shape
-    # print type(U)
-    # print max(U), min(U)
-
-    # D = Mean(real_data)
-    # print "mean shape", D
-    # SaveEigenface(U, 'test.jpg')
-    # print setdiff1d(map(int, U), ReadOneImage('MeanImage.jpg'))
-    
-
     
     # Coursework 4 task 6 ends here
     return array(orthoPhi)
@@ -184,24 +108,34 @@ def PrincipalComponents(theData):
 #
 noVariables, noRoots, noStates, noDataPoints, datain = ReadFile("HepatitisC.txt")
 theData = array(datain)
-AppendString("results.txt","Coursework Three Results by txl11")
+AppendString("results.txt","Coursework Four Results by txl11")
 AppendString("results.txt","") #blank line
 
-# test_data = [ array([[1, 2, 5], [3, 4, 5]]), random.rand(3, 5), random.rand(5,3), random.rand(8, 8) ]
+AppendString("results.txt","Mean vector of the HepatitisC data set")
+AppendList("results.txt",Mean(theData)) 
 
-# for t in test_data:
-#     print Mean(t)
-#     # print average(t, axis=1), "\n"x
-m = array([[-1, 1, 2], [ -2, 3, 1], [4, 0,3]])
-# print Covariance(m)
-# print cov(m)
+AppendString("results.txt","Covariance matrix of the HepatitisC data set")
+AppendArray("results.txt",Covariance(theData)) 
 
-# print 
-
-CreateEigenfaceFiles(ReadEigenfaceBasis())
+print 'Saving Eigenfacefiles as PrincipalComponent_n.jpg'
+CreateEigenfaceFiles(ReadEigenfaceBasis(), 'PrincipalComponent_')
 
 projected_faces = ProjectFace(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), ReadOneImage('c.pgm'))
+AppendString("results.txt","Component Magnitudes for c.pgm")
+AppendList("results.txt", projected_faces)
 
-CreatePartialReconstructions(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), projected_faces)
+print 'Saving partial reconstructions as Reconstruction_n.jpg'
+CreatePartialReconstructions(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), projected_faces, "Reconstruction_")
 
-print PrincipalComponents(ReadImages())
+our_basis = PrincipalComponents(ReadImages())
+
+print 'Saving Eigenfacefiles from the basis computed from a-f.pgm as PrincipalComponentCustom_n'
+CreateEigenfaceFiles(our_basis, 'PrincipalComponentCustom_')
+
+
+projected_faces = ProjectFace(our_basis, ReadOneImage('MeanImage.jpg'), ReadOneImage('c.pgm'))
+
+print 'Saving Eigenfacefiles from the basis computed from a-f.pgm as Reconstruction_Custom_n'
+CreatePartialReconstructions(our_basis, ReadOneImage('MeanImage.jpg'), projected_faces, "Reconstruction_Custom_")
+
+
