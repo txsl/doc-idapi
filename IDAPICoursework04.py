@@ -13,10 +13,12 @@ def Mean(theData):
     noVariables=theData.shape[1] 
     mean = []
     # Coursework 4 task 1 begins here
-    print realData.shape
-    print realData
+    
+    # print realData.shape
+    # print realData
     # print realData.sum(axis=0), theData.shape[1]
-    mean = realData.sum(axis=0)/theData.shape[1]
+    # print realData.shape
+    mean = realData.sum(axis=0)/theData.shape[0]
 
 
     # Coursework 4 task 1 ends here
@@ -120,8 +122,55 @@ def PrincipalComponents(theData):
     # data has so many variables you need to use the Kohonen Lowe method described in lecture 15
     # The output should be a list of the principal components normalised and sorted in descending 
     # order of their eignevalues magnitudes
-    # print array(theData).shape
-    U = Mean(array(theData))
+    real_data = array(theData)
+    # print real_data.shape
+    # print real_data
+    # print Mean(real_data)
+    # print tile(Mean(real_data), (real_data.shape[0], 1)).shape
+    
+    # print tile(Mean(real_data), (real_data.shape[0], 1))
+    # print real_data.shape[0]
+    # print tile(Mean(real_data), (real_data.shape[0], 1))
+    U = real_data - tile(Mean(real_data), (real_data.shape[0], 1))
+
+    # small_vec = U * U.T
+    # print U.T * U
+    # print U * U.T
+    # print dot(U.T, U).shape
+    small_vec = dot(U, U.T)
+
+    # print small_vec
+    # small_eig = 1
+    w, v = linalg.eig(small_vec)
+    # print sum(small_vec, axis=0)
+
+    big_eig = dot(U.T, v)
+
+    # sort_list = 
+    print argsort(w)[::-1]
+    for item in argsort(w)[::-1]:
+        orthoPhi.append(big_eig[:,item]/sqrt(sum(power(big_eig[:,item],2))))
+
+    # for row in big_eig:
+    #     pass
+        # print sum(power(row, 2))
+
+    print w
+    # print 'NORMS'
+    # for row in ReadEigenfaceBasis():
+    #     print linalg.norm(row)
+    # print linalg.norm(ReadEigenfaceBasis())
+
+    for row in orthoPhi:
+        print sum(power(row, 2))
+
+    # print U
+    # print U.shape
+    # print type(U)
+    # print max(U), min(U)
+
+    # D = Mean(real_data)
+    # print "mean shape", D
     # SaveEigenface(U, 'test.jpg')
     # print setdiff1d(map(int, U), ReadOneImage('MeanImage.jpg'))
     
@@ -155,4 +204,4 @@ projected_faces = ProjectFace(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'
 
 CreatePartialReconstructions(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), projected_faces)
 
-# PrincipalComponents(ReadImages())
+print PrincipalComponents(ReadImages())
