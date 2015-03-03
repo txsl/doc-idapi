@@ -93,8 +93,15 @@ def PrincipalComponents(theData):
     # Get small matrix's eigvenvalues and eigenvectors
     w, v = linalg.eig(small_vec)
 
+    # Locate the 0 valued eigenvalue and remove it since it does not add new information in a new dimension
+    zero_loc = where(w==0)[0]
+    w = delete(w, zero_loc)
+
     # Convert the eigenvalues from the small matrix to the big one
     big_eig = dot(U.T, v)
+
+    # Remove the eigenvector with the eigenvalue == 0
+    big_eig = delete(big_eig, zero_loc, axis=1)
 
     # Sort in to the correct order (with argsort), and normalise each vector
     for item in argsort(w)[::-1]:
@@ -127,15 +134,17 @@ AppendList("results.txt", projected_faces)
 print 'Saving partial reconstructions as Reconstruction_n.jpg'
 CreatePartialReconstructions(ReadEigenfaceBasis(), ReadOneImage('MeanImage.jpg'), projected_faces, "Reconstruction_")
 
+
+
 our_basis = PrincipalComponents(ReadImages())
 
 print 'Saving Eigenfacefiles from the basis computed from a-f.pgm as PrincipalComponentCustom_n'
 CreateEigenfaceFiles(our_basis, 'PrincipalComponentCustom_')
 
 
-projected_faces = ProjectFace(our_basis, ReadOneImage('MeanImage.jpg'), ReadOneImage('c.pgm'))
+projected_faces = ProjectFace(our_basis, Mean(array(ReadImages())), ReadOneImage('c.pgm'))
 
 print 'Saving Eigenfacefiles from the basis computed from a-f.pgm as Reconstruction_Custom_n'
-CreatePartialReconstructions(our_basis, ReadOneImage('MeanImage.jpg'), projected_faces, "Reconstruction_Custom_")
+CreatePartialReconstructions(our_basis, Mean(array(ReadImages())), projected_faces, "Reconstruction_Custom_")
 
 
